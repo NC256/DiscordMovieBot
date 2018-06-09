@@ -32,11 +32,11 @@ public class Main extends ListenerAdapter {
 
    //Overriding a method in the ListenerAdapter class so I can receive new messages
    @Override
-   public void onMessageReceived(MessageReceivedEvent event){
+   public void onMessageReceived(MessageReceivedEvent event) {
       System.out.println(event.getAuthor() + event.getMessage().getContentDisplay());
 
       //If a bot sent a message, I'm not going to reply (because infinite loops are scary)
-      if(event.getAuthor().isBot()){
+      if (event.getAuthor().isBot()) {
          return;
       }
 
@@ -45,7 +45,7 @@ public class Main extends ListenerAdapter {
       //I check what channel type I'm in first because if I call .getTextChannel() on a
       // message that wasn't sent in a TextChannel, then there's nothing to get and we
       // get an error instead
-      if(event.getChannelType().toString().equals("TEXT")) {
+      if (event.getChannelType().toString().equals("TEXT")) {
          if (!event.getTextChannel().canTalk()) {
             return;
          }
@@ -65,7 +65,7 @@ public class Main extends ListenerAdapter {
       Guild thisGuild = event.getGuild();
 
       //If you've sent a help message I'm gonna print this string
-      if(messageDisplay.equals("!NThelp")){
+      if (messageDisplay.equals("!NThelp")) {
 
          //You may notice that every single .sendMessage() ends with a .queue();
          // This is because Discord has some measures to avoid spam, and JDA handles
@@ -79,7 +79,7 @@ public class Main extends ListenerAdapter {
       //If the message we received starts with this text, do this stuff
       //To avoid this Main being 5000 lines long with all the code for every command,
       // most of them will be placed in other Classes
-      if(messageDisplay.startsWith("!NTrankMovies")){
+      if (messageDisplay.startsWith("!NTrankMovies")) {
 
          //Gets list of all TextChannels in guild (server) and puts them in a List
          List<TextChannel> channelList = thisGuild.getTextChannels();
@@ -89,7 +89,7 @@ public class Main extends ListenerAdapter {
       }
 
       //Sends a random number to the server
-      if(messageDisplay.startsWith("!NTd")){
+      if (messageDisplay.startsWith("!NTd")) {
          thisChannel.sendMessage(diceRoller.roll(messageDisplay)).queue();
       }
    }

@@ -8,7 +8,7 @@ public class MyUtils {
    // through them by name and returns the TextChannel with the matching name
    //Returns null if it can't find the channel in the provided list
    static TextChannel getTextChannelByName(String channelName, List<TextChannel>
-           channelList){
+           channelList) {
 
       for (int i = 0; i < channelList.size(); i++) {
          if (channelList.get(i).getName().equals(channelName)) {
