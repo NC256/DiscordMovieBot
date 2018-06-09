@@ -1,6 +1,6 @@
 import java.util.Random;
 
-public class diceRoller {
+public class DiceRoller {
 
    public static String roll(String messageDisplay) {
       try {

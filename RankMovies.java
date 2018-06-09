@@ -1,6 +1,5 @@
 import net.dv8tion.jda.core.entities.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RankMovies {
@@ -13,11 +12,6 @@ public class RankMovies {
          // expensive and StringBuilders are designed for letting you add strings
          // together and are much faster
          StringBuilder movieRankings = new StringBuilder();
-
-         //Arraylist is like a fancy array, where you don't need to declare a size
-         // and can keep adding more boxes onto the end at any time (and remove
-         // boxes from anywhere in the array at any time)
-         ArrayList<Movie> movies = new ArrayList<>();
 
          //This gets the name of the channel that you type onto the end of the command
          String channelNameArg = messageDisplay.substring(14);
@@ -32,46 +26,20 @@ public class RankMovies {
             return "Could not find that channel.";
          }
 
-         //Gets a list of all messages sent in current channel, from the bottom up
-         for (Message message : movieChannel.getIterableHistory()) {
-
-            //Makes a list of reactions from the current Message
-            //Discord has two types of reactions, Emojis and Emotes. Emotes are
-            // those custom reactions you see on servers, sometimes they are animated.
-            // Emojis are the Unicode standard characters
-            List<MessageReaction> reactions = message.getReactions();
-
-            //If message has no reactions, continue to next message
-            if (reactions.isEmpty()) {
-               continue;
-            }
-
-            //Initialize new Movie object and place it in the movies ArrayList!
-            //Turns out if you just slap the new keyword in there you don't need to
-            // give each Movie object a name
-            movies.add(new Movie(message));
-         }
+         List<Message> validMovies = MyUtils.getValidMoviesFromTextChannel(movieChannel);
 
          //While my array of Movie objects isn't empty
-         while (!movies.isEmpty()) {
+         while (!validMovies.isEmpty()) {
             double highest = -1;
             int highestIndex = -1;
 
             //Loops over movies ArrayList until it finds the movie with the highest
             // average rating, which it then keeps track of that movie's score and
             // it's location in the ArrayList
-            for (int i = 0; i < movies.size(); i++) {
-               double currentAverage = movies.get(i).getAverageRating();
+            for (int i = 0; i < validMovies.size(); i++) {
+               double currentAverage = MyUtils.getAverageMovieRating(validMovies.get(i));
 
-               //CurrentAverage returns -1.0 when the movie has a red dot or has no
-               // valid ratings, in which case we throw it out
-               if (currentAverage == -1.0) {
-                  movies.remove(i);
-                  break;
-               }
-
-               //If the movie we're looking at has a higher rating then we pay attention
-               // to that one
+               //If the movie we're looking at has a higher rating then we track that one
                if (currentAverage > highest) {
                   highest = currentAverage;
                   highestIndex = i;
@@ -80,15 +48,13 @@ public class RankMovies {
             //We then append the name of the movie and it's score to our
             // StringBuilder we declared at the top of this section
             //First we check that we have a valid movie though
-            if (highestIndex != -1) {
-               movieRankings.append(movies.get(highestIndex).getName());
-               movieRankings.append(": ");
-               movieRankings.append(movies.get(highestIndex).getAverageRating());
-               movieRankings.append("\n");
-               //After we've done that, we remove this Movie from the ArrayList so we
-               // can loop over it again looking for the next highest ranked movie
-               movies.remove(highestIndex);
-            }
+            movieRankings.append(validMovies.get(highestIndex).getContentDisplay());
+            movieRankings.append(": ");
+            movieRankings.append(MyUtils.getAverageMovieRating(validMovies.get(highestIndex)));
+            movieRankings.append("\n");
+            //After we've done that, we remove this Movie from the ArrayList so we
+            // can loop over it again looking for the next highest ranked movie
+            validMovies.remove(highestIndex);
          }
 
          //If our StringBuilder is empty after all the prior code has run, then we haven't

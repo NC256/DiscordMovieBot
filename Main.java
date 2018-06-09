@@ -64,6 +64,11 @@ public class Main extends ListenerAdapter {
       //In discord-ese, a Guild is the same thing as a Server
       Guild thisGuild = event.getGuild();
 
+      //Gets list of all TextChannels in guild (server) and puts them in a List
+      List<TextChannel> channelList = thisGuild.getTextChannels();
+
+      User thisUser = event.getAuthor();
+
       //If you've sent a help message I'm gonna print this string
       if (messageDisplay.equals("!NThelp")) {
 
@@ -81,16 +86,18 @@ public class Main extends ListenerAdapter {
       // most of them will be placed in other Classes
       if (messageDisplay.startsWith("!NTrankMovies")) {
 
-         //Gets list of all TextChannels in guild (server) and puts them in a List
-         List<TextChannel> channelList = thisGuild.getTextChannels();
-
-         //Sends the list of movies to the server
+         //Sends the list of movies and received text to the server
          thisChannel.sendMessage(RankMovies.rankings(messageDisplay, channelList)).queue();
+      }
+
+      if (messageDisplay.startsWith("!NTcheckMovies")){
+         thisChannel.sendMessage(CheckMovies.check(messageDisplay, channelList, thisUser))
+                 .queue();
       }
 
       //Sends a random number to the server
       if (messageDisplay.startsWith("!NTd")) {
-         thisChannel.sendMessage(diceRoller.roll(messageDisplay)).queue();
+         thisChannel.sendMessage(DiceRoller.roll(messageDisplay)).queue();
       }
    }
 }

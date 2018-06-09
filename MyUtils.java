@@ -1,5 +1,8 @@
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageReaction;
 import net.dv8tion.jda.core.entities.TextChannel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MyUtils {
@@ -16,5 +19,118 @@ public class MyUtils {
          }
       }
       return null;
+   }
+
+   //This can probably be done better, but having the structure in place is the most
+   // important thing for right now
+   static List<Message> getValidMoviesFromTextChannel(TextChannel movieChannel){
+      ArrayList<Message> movieCandidates = new ArrayList<>();
+      for (Message message : movieChannel.getIterableHistory()){
+         List<MessageReaction> reactions = message.getReactions();
+         if (reactions.isEmpty()) {
+            continue;
+         }
+         movieCandidates.add(message);
+      }
+
+      //This nifty little line is called a Predicate, added in Java 8
+      //It will look at my entire movieCandidates ArrayList and remove anything that
+      // returns a -1 for it's average rating. This avoids loops and removing elements
+      // and literally does all of it in one line
+      movieCandidates.removeIf(m -> getAverageMovieRating(m) == -1);
+
+      return movieCandidates;
+   }
+
+   static double getAverageMovieRating (Message movie){
+      //Make list of reactions
+      List<MessageReaction> reactions = movie.getReactions();
+      double numOfReactions = 0;
+      double totalValue = 0;
+
+      //For each reaction
+      for (int i = 0; i < reactions.size(); i++) {
+         MessageReaction reaction = reactions.get(i);
+
+         //If we find a red circle, return -1.0
+         if (isRedCircle(reaction.getReactionEmote().getName())) {
+            return -1.0;
+         }
+
+         //If the reaction is valid, add the number of times it's submitted to the
+         // total and add it's value to the ongoing total
+         if (isValidReaction(reaction.getReactionEmote().getName())) {
+            numOfReactions += reaction.getCount();
+            totalValue += (getValidReactionValue(reaction.getReactionEmote().getName()
+            ) * reaction.getCount());
+         }
+      }
+      //If, after counting the reactions, we find no ratings, return -1.0
+      if (numOfReactions == 0) {
+         return -1.0;
+      } else {
+         return (totalValue / numOfReactions);
+      }
+   }
+
+   //Checks if reaction is valid movie rating
+   public static boolean isValidReaction(String name) {
+
+      //This method checks if the name of the reaction is one of the valid rating emojis
+      if (name.equals("1⃣") || name.equals("2⃣") || name.equals("3⃣") || name.equals
+              ("4⃣") || name.equals("5⃣") || name.equals("6⃣") || name.equals("7⃣") ||
+              name.equals("8⃣") || name.equals("9⃣") || name.equals("\uD83D\uDD1F") ||
+              name.equals("\u23F8") || name.equals("\uD83D\uDD5B") || name.equals("0⃣")) {
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   //Need method for getUserByName
+
+   //Red dot movies are ones that we haven't watched yet, and should not be given a rating
+   //This maybe shouldn't exist?
+   public static boolean isRedCircle(String name) {
+
+      if (name.equals("\uD83D\uDD34")) {
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   //This method returns an integer value for each of the valid reactions
+   public static int getValidReactionValue(String name) {
+      switch (name) {
+         case "1⃣":
+            return 1;
+         case "2⃣":
+            return 2;
+         case "3⃣":
+            return 3;
+         case "4⃣":
+            return 4;
+         case "5⃣":
+            return 5;
+         case "6⃣":
+            return 6;
+         case "7⃣":
+            return 7;
+         case "8⃣":
+            return 8;
+         case "9⃣":
+            return 9;
+         case "\uD83D\uDD1F":
+            return 10;
+         case "\u23F8":
+            return 11;
+         case "\uD83D\uDD5B":
+            return 12;
+         case "0⃣":
+            return 0;
+         default:
+            return -1;
+      }
    }
 }
