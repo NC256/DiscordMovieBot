@@ -1,6 +1,4 @@
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageReaction;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +8,7 @@ public class MyUtils {
    //Gets a list of TextChannels and the name of a desired TextChannel and searches
    // through them by name and returns the TextChannel with the matching name
    //Returns null if it can't find the channel in the provided list
-   static TextChannel getTextChannelByName(String channelName, List<TextChannel>
+   public static TextChannel getTextChannelByName(String channelName, List<TextChannel>
            channelList) {
 
       for (int i = 0; i < channelList.size(); i++) {
@@ -23,7 +21,7 @@ public class MyUtils {
 
    //This can probably be done better, but having the structure in place is the most
    // important thing for right now
-   static List<Message> getValidMoviesFromTextChannel(TextChannel movieChannel){
+   public static List<Message> getValidMoviesFromTextChannel(TextChannel movieChannel){
       ArrayList<Message> movieCandidates = new ArrayList<>();
       for (Message message : movieChannel.getIterableHistory()){
          List<MessageReaction> reactions = message.getReactions();
@@ -42,7 +40,7 @@ public class MyUtils {
       return movieCandidates;
    }
 
-   static double getAverageMovieRating (Message movie){
+   public static double getAverageMovieRating (Message movie){
       //Make list of reactions
       List<MessageReaction> reactions = movie.getReactions();
       double numOfReactions = 0;
@@ -87,7 +85,16 @@ public class MyUtils {
       }
    }
 
-   //Need method for getUserByName
+   //Returns a user from a Guild based on name
+   public static User getUserByName(String name, Guild guild){
+      List<Member> returnedUsers = guild.getMembersByName(name, true);
+      if (returnedUsers.size() > 1){
+         return null;
+      }
+      else{
+         return returnedUsers.get(0).getUser();
+      }
+   }
 
    //Red dot movies are ones that we haven't watched yet, and should not be given a rating
    //This maybe shouldn't exist?
