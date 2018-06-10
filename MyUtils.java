@@ -91,6 +91,18 @@ public class MyUtils {
       if (returnedUsers.size() > 1){
          return null;
       }
+      else if (returnedUsers.size() == 0){
+         List<Member> returnedNicknameUsers = guild.getMembersByNickname(name, true);
+         if(returnedNicknameUsers.size() > 1){
+            return null;
+         }
+         else if (returnedNicknameUsers.size() == 0){
+            return null;
+         }
+         else{
+            return returnedNicknameUsers.get(0).getUser();
+         }
+      }
       else{
          return returnedUsers.get(0).getUser();
       }

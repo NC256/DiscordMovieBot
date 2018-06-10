@@ -90,8 +90,9 @@ public class Main extends ListenerAdapter {
          thisChannel.sendMessage(RankMovies.rankings(messageDisplay, channelList)).queue();
       }
 
-      if (messageDisplay.startsWith("!NTcheckMovies")){
-         thisChannel.sendMessage(CheckMovies.check(messageDisplay, channelList, thisUser))
+      if (messageDisplay.startsWith("!NTratings")){
+         thisChannel.sendMessage(CheckMovies.check(messageDisplay, channelList,
+                 thisUser, thisGuild))
                  .queue();
       }
 
