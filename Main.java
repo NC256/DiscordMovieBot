@@ -98,8 +98,13 @@ public class Main extends ListenerAdapter {
       //!NTmyRankings #channelName #OptionalUsername
       if (messageDisplay.startsWith("!NTmyRankings")){
          thisChannel.sendMessage(CheckMovies.check(messageDisplay, channelList,
-                 thisUser, thisGuild))
-                 .queue();
+                 thisUser, thisGuild)).queue();
+      }
+
+      //!NTcheckCompletion #channelName #OptionalUsername
+      if (messageDisplay.startsWith("!NTcheckCompletion")){
+         thisChannel.sendMessage(MovieCompletion.completion(messageDisplay,
+                 channelList, thisUser, thisGuild)).queue();
       }
 
       //Sends a random number to the server
