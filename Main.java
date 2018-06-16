@@ -84,7 +84,7 @@ public class Main extends ListenerAdapter {
                  "rankings or the rankings of `optionalUsername`\n" +
                  "`!NTcheckCompletion channelName optionalUsername` Returns a list of " +
                  "movies that you haven't rated or have accidentally rated twice. \n" +
-                 ("`!NTopinions channelName (startOfMovieName)` Not working yet"))
+                 ("`!NTopinions channelName movieName` Not working yet"))
                  .queue();
       }
 
@@ -109,6 +109,10 @@ public class Main extends ListenerAdapter {
       if (messageDisplay.startsWith("!NTcheckCompletion")){
          thisChannel.sendMessage(MovieCompletion.completion(messageDisplay,
                  channelList, thisUser, thisGuild)).queue();
+      }
+
+      if(messageDisplay.startsWith("!NTopinions")){
+         thisChannel.sendMessage(MovieOpinions.opinions(messageDisplay, channelList)).queue();
       }
 
       //Sends a random number to the server
