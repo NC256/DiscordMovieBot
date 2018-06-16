@@ -13,11 +13,17 @@ public class RankMovies {
          // together and are much faster
          StringBuilder movieRankings = new StringBuilder();
 
+         //Open code block
+         movieRankings.append("```");
+
          //This gets the name of the channel that you type onto the end of the command
-         String channelNameArg = messageDisplay.substring(14);
+         String[] input = messageDisplay.split(" ");
+         if(input.length==1){
+            return "Could not find that channel.";
+         }
 
          //Calls MyUtils class to search for the movie in the list of channels provided
-         TextChannel movieChannel = MyUtils.getTextChannelByName(channelNameArg,
+         TextChannel movieChannel = MyUtils.getTextChannelByName(input[1],
                  channelList);
 
          //If that method was unable to find the channel then it returns null, and we
@@ -45,13 +51,13 @@ public class RankMovies {
                   highestIndex = i;
                }
             }
-            //We then append the name of the movie and it's score to our
-            // StringBuilder we declared at the top of this section
-            //First we check that we have a valid movie though
-            movieRankings.append(validMovies.get(highestIndex).getContentDisplay());
-            movieRankings.append(": ");
-            movieRankings.append(MyUtils.getAverageMovieRating(validMovies.get(highestIndex)));
-            movieRankings.append("\n");
+            //We get the name and rating and format it to look nice
+            String movieName = validMovies.get(highestIndex).getContentDisplay();
+            double movieRating = MyUtils.getAverageMovieRating
+                    (validMovies.get(highestIndex));
+
+            movieRankings.append(String.format("%6.3f: %-50s\n", movieRating,
+                    movieName));
             //After we've done that, we remove this Movie from the ArrayList so we
             // can loop over it again looking for the next highest ranked movie
             validMovies.remove(highestIndex);
@@ -62,6 +68,10 @@ public class RankMovies {
          if (movieRankings.toString().isEmpty()) {
             return "No movies found.";
          }
+
+         //Close code block
+         movieRankings.append("```");
+
          //Finally we use the .toString() method of our StringBuilder to return the
          // results
          return movieRankings.toString();

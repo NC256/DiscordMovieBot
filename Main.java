@@ -77,20 +77,26 @@ public class Main extends ListenerAdapter {
          // this automatically if you tack on .queue() at the end of every .sendMessage();
          thisChannel.sendMessage("I am currently under construction!\nTry the " +
                  ("following commands:\n\n`!NTd num` returns a random number between 0 " +
-                         "and num\n`!NTrankMovies channelName` returns a ranking of " +
-                         "all the movies in `channelName`")).queue();
+                         "and num\n`!NTrankings channelName` returns a ranking of " +
+                         "all the movies in `channelName`\n" + "`!NTmyRankings " +
+                         "channelName optionalUsername` Delivers your personal " +
+                         "rankings or the rankings of `optionalUsername`" +
+                         " ")).queue();
       }
 
       //If the message we received starts with this text, do this stuff
       //To avoid this Main being 5000 lines long with all the code for every command,
       // most of them will be placed in other Classes
-      if (messageDisplay.startsWith("!NTrankMovies")) {
+
+      //!NTrankings #channelName
+      if (messageDisplay.startsWith("!NTrankings")) {
 
          //Sends the list of movies and received text to the server
          thisChannel.sendMessage(RankMovies.rankings(messageDisplay, channelList)).queue();
       }
 
-      if (messageDisplay.startsWith("!NTratings")){
+      //!NTmyRankings #channelName #OptionalUsername
+      if (messageDisplay.startsWith("!NTmyRankings")){
          thisChannel.sendMessage(CheckMovies.check(messageDisplay, channelList,
                  thisUser, thisGuild))
                  .queue();

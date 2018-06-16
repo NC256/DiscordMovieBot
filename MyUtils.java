@@ -40,6 +40,7 @@ public class MyUtils {
       return movieCandidates;
    }
 
+   //Returns the average score of the movie passed
    public static double getAverageMovieRating (Message movie){
       //Make list of reactions
       List<MessageReaction> reactions = movie.getReactions();
