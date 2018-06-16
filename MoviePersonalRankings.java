@@ -4,7 +4,7 @@ import net.dv8tion.jda.core.entities.*;
 import java.util.List;
 
 
-public class CheckMovies {
+public class MoviePersonalRankings {
 
    //Currently garbage
    //Takes 5-10 seconds to get un-sorted results back for a set of like ~23 messages
@@ -23,8 +23,18 @@ public class CheckMovies {
          return "No channel name provided or you need a space " +
                  "before the channel name";
       }
+
+      //Because we split on spaces and usernames can contain spaces, we must treat
+      // everything past the username input as one single username and reconstruct it
       if(input.length > 2){
-         username = input[2];
+         for(int i = 2; i < input.length; i++){
+            if(i == 2){
+               username = input[2];
+            }
+            else if (i > 2){
+               username += " " + input[i];
+            }
+         }
       }
 
       TextChannel movieChannel = MyUtils.getTextChannelByName(channelName, channelList);

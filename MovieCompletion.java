@@ -22,8 +22,15 @@ public class MovieCompletion {
          return "No channel name provided or you need a space " +
                  "before the channel name";
       }
-      if (input.length > 2) {
-         username = input[2];
+      if(input.length > 2){
+         for(int i = 2; i < input.length; i++){
+            if(i == 2){
+               username = input[2];
+            }
+            else if (i > 2){
+               username += " " + input[i];
+            }
+         }
       }
 
       TextChannel movieChannel = MyUtils.getTextChannelByName(channelName, channelList);

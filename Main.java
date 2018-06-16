@@ -75,13 +75,17 @@ public class Main extends ListenerAdapter {
          //You may notice that every single .sendMessage() ends with a .queue();
          // This is because Discord has some measures to avoid spam, and JDA handles
          // this automatically if you tack on .queue() at the end of every .sendMessage();
-         thisChannel.sendMessage("I am currently under construction!\nTry the " +
-                 ("following commands:\n\n`!NTd num` returns a random number between 0 " +
-                         "and num\n`!NTrankings channelName` returns a ranking of " +
-                         "all the movies in `channelName`\n" + "`!NTmyRankings " +
-                         "channelName optionalUsername` Delivers your personal " +
-                         "rankings or the rankings of `optionalUsername`" +
-                         " ")).queue();
+         thisChannel.sendMessage("I am currently under construction!\n" +
+                 "Try the following commands:\n\n" +
+                 "`!NTd num` returns a random number between 0 and num\n" +
+                 "`!NTrankings channelName` returns a ranking of all the movies" +
+                 " in `channelName`\n" +
+                 "`!NTmyRankings channelName optionalUsername` Delivers your personal " +
+                 "rankings or the rankings of `optionalUsername`\n" +
+                 "`!NTcheckCompletion channelName optionalUsername` Returns a list of " +
+                 "movies that you haven't rated or have accidentally rated twice. \n" +
+                 ("`!NTopinions channelName (startOfMovieName)` Not working yet"))
+                 .queue();
       }
 
       //If the message we received starts with this text, do this stuff
@@ -92,12 +96,12 @@ public class Main extends ListenerAdapter {
       if (messageDisplay.startsWith("!NTrankings")) {
 
          //Sends the list of movies and received text to the server
-         thisChannel.sendMessage(RankMovies.rankings(messageDisplay, channelList)).queue();
+         thisChannel.sendMessage(MovieRankings.rankings(messageDisplay, channelList)).queue();
       }
 
       //!NTmyRankings #channelName #OptionalUsername
       if (messageDisplay.startsWith("!NTmyRankings")){
-         thisChannel.sendMessage(CheckMovies.check(messageDisplay, channelList,
+         thisChannel.sendMessage(MoviePersonalRankings.check(messageDisplay, channelList,
                  thisUser, thisGuild)).queue();
       }
 

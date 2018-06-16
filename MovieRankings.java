@@ -2,7 +2,7 @@ import net.dv8tion.jda.core.entities.*;
 
 import java.util.List;
 
-public class RankMovies {
+public class MovieRankings {
 
    static String rankings(String messageDisplay, List<TextChannel> channelList) {
       try {
