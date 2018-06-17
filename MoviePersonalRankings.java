@@ -1,6 +1,8 @@
 
 import net.dv8tion.jda.core.entities.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -13,6 +15,7 @@ public class MoviePersonalRankings {
    static String check(String messageDisplay, List<TextChannel> channelList, User
            thisUser, Guild thisGuild){
       StringBuilder movieStatus = new StringBuilder();
+      movieStatus.append("```");
       String[] input = messageDisplay.split(" ");
       String username = null;
       String channelName;
@@ -56,53 +59,41 @@ public class MoviePersonalRankings {
             movieStatus.append("'s Movie Ratings:\n");
          }
       }
-      //For each movie
       int currentReactionValue;
       String currentReactionName;
-      long startLoop = System.currentTimeMillis();
+
+      ArrayList<Integer> ratings = new ArrayList<>();
+      ArrayList<String> names = new ArrayList<>();
+
+      //For each movie
       for(int i = 0; i < movies.size(); i++){
-
-         //Get a list of all reactions
-         List<MessageReaction> reactions = movies.get(i).getReactions();
-
-         //For each reaction
-         middleLoop:
-         for(int k = 0; k < reactions.size(); k++){
-
-            //Get its name
-            currentReactionName = reactions.get(k).getReactionEmote().getName();
-
-            //If it's a valid reaction, get its value
-            if(MyUtils.isValidReaction(currentReactionName)) {
-               currentReactionValue = MyUtils.getValidReactionValue
-                       (currentReactionName);
-            }
-
-            //If it isn't, move to the next reaction
-            else{
-               continue;
-            }
-
-            //Use this garbage to get the users for the current reaction
-            Object[] userArray = reactions.get(k).getUsers().stream().toArray();
-
-            //For the list of users on this reaction
-            for(int j = 0; j < userArray.length; j++){
-               if(userArray[j].equals(thisUser)){
-                  movieStatus.append(movies.get(i).getContentDisplay());
-                  movieStatus.append(" ");
-                  movieStatus.append(currentReactionValue);
-                  movieStatus.append("\n");
-
-                  //This assumes the user has rated each movie only once and saves time
-                  break middleLoop;
-               }
-            }
+         int userRating = MyUtils.getUserRatingFromMovie(movies.get(i), thisUser);
+         if(userRating == -1){
+            //The user did not rate the current movie
+         }
+         else{
+            ratings.add(userRating);
+            names.add(movies.get(i).getContentDisplay());
          }
       }
-      long loopStopped = System.currentTimeMillis();
-      movieStatus.append("That took " + (loopStopped - startLoop) + " milliseconds to " +
-              "run.");
+
+      //Sorting output
+      while(!ratings.isEmpty()){
+         int highest = -1;
+         int highestIndex = -1;
+
+         for(int i = 0; i < ratings.size(); i++){
+            if(ratings.get(i) > highest){
+               highest = ratings.get(i);
+               highestIndex = i;
+            }
+         }
+         movieStatus.append(String.format("%2d: %-50s\n", ratings.get(highestIndex),
+                 names.get(highestIndex)));
+         names.remove(highestIndex);
+         ratings.remove(highestIndex);
+      }
+      movieStatus.append("```");
       return movieStatus.toString();
    }
 }

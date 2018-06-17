@@ -86,6 +86,31 @@ public class MyUtils {
       }
    }
 
+   //Gets the reaction value for a given user and given movie
+   public static int getUserRatingFromMovie(Message movie, User user) {
+
+      List<MessageReaction> reactions = movie.getReactions();
+      for (MessageReaction mr: reactions) {
+         String currentReactionName = mr.getReactionEmote().getName();
+         int currentReactionValue = -1;
+
+         //If not a valid reaction, skip to the next one
+         if (MyUtils.isValidReaction(currentReactionName)) {
+            currentReactionValue = MyUtils.getValidReactionValue(currentReactionName);
+         } else {
+            continue;
+         }
+         Object[] userArray = mr.getUsers().stream().toArray();
+
+         for (int k = 0; k < userArray.length; k++) {
+            if (userArray[k].equals(user)) {
+               return currentReactionValue;
+            }
+         }
+      }
+      return -1;
+   }
+
    //Returns a user from a Guild based on name
    public static User getUserByName(String name, Guild guild){
       List<Member> returnedUsers = guild.getMembersByName(name, true);

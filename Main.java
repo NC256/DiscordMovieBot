@@ -84,7 +84,8 @@ public class Main extends ListenerAdapter {
                  "rankings or the rankings of `optionalUsername`\n" +
                  "`!NTcheckCompletion channelName optionalUsername` Returns a list of " +
                  "movies that you haven't rated or have accidentally rated twice. \n" +
-                 ("`!NTopinions channelName movieName` Not working yet"))
+                 ("`!NTopinions channelName movieName` Returns the ratings on the given" +
+                         " movie"))
                  .queue();
       }
 
