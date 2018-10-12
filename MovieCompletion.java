@@ -42,7 +42,8 @@ public class MovieCompletion {
       if (username == null) {
          movieStatus.append(thisUser.getName());
          movieStatus.append("'s Movie Completion:\n");
-      } else {
+      }
+      else {
          thisUser = MyUtils.getUserByName(username, thisGuild);
          if (thisUser == null) {
             return "Person not found or multiple users with that name.";

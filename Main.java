@@ -84,9 +84,10 @@ public class Main extends ListenerAdapter {
                  "rankings or the rankings of `optionalUsername`\n" +
                  "`!NTcheckCompletion channelName optionalUsername` Returns a list of " +
                  "movies that you haven't rated or have accidentally rated twice. \n" +
-                 ("`!NTopinions channelName movieName` Returns the ratings on the given" +
-                         " movie"))
-                 .queue();
+                 "`!NTopinions channelName movieName` Returns the ratings on the given" +
+                         " movie\n" +
+                 "`!NTrandomMovie channelName` Gives you a random red dot movie from " +
+                         "`channelName`").queue();
       }
 
       //If the message we received starts with this text, do this stuff
@@ -94,29 +95,40 @@ public class Main extends ListenerAdapter {
       // most of them will be placed in other Classes
 
       //!NTrankings #channelName
+      //Returns a ranking of all the movies in #channelName
       if (messageDisplay.startsWith("!NTrankings")) {
 
-         //Sends the list of movies and received text to the server
          thisChannel.sendMessage(MovieRankings.rankings(messageDisplay, channelList)).queue();
       }
 
-      //!NTmyRankings #channelName #OptionalUsername
+      //!NTmyRankings #channelName #optionalUsername
+      //Returns personal rankings or the rankings of #optionalUsername
       if (messageDisplay.startsWith("!NTmyRankings")){
          thisChannel.sendMessage(MoviePersonalRankings.check(messageDisplay, channelList,
                  thisUser, thisGuild)).queue();
       }
 
-      //!NTcheckCompletion #channelName #OptionalUsername
+      //!NTcheckCompletion #channelName #optionalUsername
+      //Returns a list of movies you haven't rated or have accidentally rated twice
       if (messageDisplay.startsWith("!NTcheckCompletion")){
          thisChannel.sendMessage(MovieCompletion.completion(messageDisplay,
                  channelList, thisUser, thisGuild)).queue();
       }
 
+      //!NTopinions #channelName #movieName
+      //Returns people's ratings of the given movie
       if(messageDisplay.startsWith("!NTopinions")){
          thisChannel.sendMessage(MovieOpinions.opinions(messageDisplay, channelList)).queue();
       }
 
-      //Sends a random number to the server
+      //!NTrandomMovie #channelName
+      //Returns a random red dot movie from #channelName
+      if(messageDisplay.startsWith("!NTrandomMovie")){
+         thisChannel.sendMessage(MovieRandom.getMovie(messageDisplay, channelList)).queue();
+      }
+
+      //!NTd #num
+      //Returns a random number between 0 and #num
       if (messageDisplay.startsWith("!NTd")) {
          thisChannel.sendMessage(DiceRoller.roll(messageDisplay)).queue();
       }

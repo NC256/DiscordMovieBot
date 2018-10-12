@@ -40,6 +40,44 @@ public class MyUtils {
       return movieCandidates;
    }
 
+   //Returns a list of movies that have red dot reactions
+   public static List<Message> getRedDotMoviesFromTextChannel(TextChannel movieChannel){
+      ArrayList<Message> movieCandidates = new ArrayList<>();
+      for (Message message : movieChannel.getIterableHistory()){
+         List<MessageReaction> reactions = message.getReactions();
+         if (reactions.isEmpty()) {
+            continue;
+         }
+         movieCandidates.add(message);
+      }
+      //Removes movie if it isn't a red dot movie
+      movieCandidates.removeIf(m -> !isRedDotMovie(m));
+
+      return movieCandidates;
+   }
+
+   //Returns true if the given Message movie has a red dot
+   public static boolean isRedDotMovie (Message movie){
+
+      //List of reactions
+      List<MessageReaction> reactions = movie.getReactions();
+
+      //For each reaction
+      for (int i = 0; i < reactions.size(); i++){
+         MessageReaction reaction = reactions.get(i);
+
+         //If we find a red dot, return true
+         if (isRedCircle(reaction.getReactionEmote().getName())){
+            return true;
+         }
+         else{
+            continue;
+         }
+      }
+
+      return false;
+   }
+
    //Returns the average score of the movie passed
    public static double getAverageMovieRating (Message movie){
       //Make list of reactions
