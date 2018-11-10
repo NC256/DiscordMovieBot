@@ -17,4 +17,4 @@ Currently the following commands are implemented:
 
 ## Built With
 
-* [JDA - (Java Discord API)] (https://github.com/DV8FromTheWorld/JDA) - A Java API for Discord's REST api and Websocket-Events.
+* [JDA - (Java Discord API)](https://github.com/DV8FromTheWorld/JDA) - A Java API for Discord's REST api and Websocket-Events.
