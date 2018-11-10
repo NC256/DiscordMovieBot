@@ -70,23 +70,23 @@ public class Main extends ListenerAdapter {
       User thisUser = event.getAuthor();
 
       //If you've sent a help message I'm gonna print this string
-      if (messageDisplay.equals("!NThelp")) {
+      if (messageDisplay.equals("!help")) {
 
          //You may notice that every single .sendMessage() ends with a .queue();
          // This is because Discord has some measures to avoid spam, and JDA handles
          // this automatically if you tack on .queue() at the end of every .sendMessage();
          thisChannel.sendMessage("I am currently under construction!\n" +
                  "Try the following commands:\n\n" +
-                 "`!NTd num` returns a random number between 0 and num\n" +
-                 "`!NTrankings channelName` returns a ranking of all the movies" +
+                 "`!d num` returns a random number between 0 and num\n" +
+                 "`!rankings channelName` returns a ranking of all the movies" +
                  " in `channelName`\n" +
-                 "`!NTmyRankings channelName optionalUsername` Delivers your personal " +
+                 "`!myRankings channelName optionalUsername` Delivers your personal " +
                  "rankings or the rankings of `optionalUsername`\n" +
-                 "`!NTcheckCompletion channelName optionalUsername` Returns a list of " +
+                 "`!checkCompletion channelName optionalUsername` Returns a list of " +
                  "movies that you haven't rated or have accidentally rated twice. \n" +
-                 "`!NTopinions channelName movieName` Returns the ratings on the given" +
+                 "`!opinions channelName movieName` Returns the ratings on the given" +
                          " movie\n" +
-                 "`!NTrandomMovie channelName` Gives you a random red dot movie from " +
+                 "`!randomMovie channelName` Gives you a random red dot movie from " +
                          "`channelName`").queue();
       }
 
@@ -94,42 +94,43 @@ public class Main extends ListenerAdapter {
       //To avoid this Main being 5000 lines long with all the code for every command,
       // most of them will be placed in other Classes
 
-      //!NTrankings #channelName
+      //!rankings #channelName
       //Returns a ranking of all the movies in #channelName
-      if (messageDisplay.startsWith("!NTrankings")) {
+      if (messageDisplay.startsWith("!" +
+              "rankings")) {
 
          thisChannel.sendMessage(MovieRankings.rankings(messageDisplay, channelList)).queue();
       }
 
-      //!NTmyRankings #channelName #optionalUsername
+      //!myRankings #channelName #optionalUsername
       //Returns personal rankings or the rankings of #optionalUsername
-      if (messageDisplay.startsWith("!NTmyRankings")){
+      if (messageDisplay.startsWith("!myRankings")){
          thisChannel.sendMessage(MoviePersonalRankings.check(messageDisplay, channelList,
                  thisUser, thisGuild)).queue();
       }
 
-      //!NTcheckCompletion #channelName #optionalUsername
+      //!checkCompletion #channelName #optionalUsername
       //Returns a list of movies you haven't rated or have accidentally rated twice
-      if (messageDisplay.startsWith("!NTcheckCompletion")){
+      if (messageDisplay.startsWith("!checkCompletion")){
          thisChannel.sendMessage(MovieCompletion.completion(messageDisplay,
                  channelList, thisUser, thisGuild)).queue();
       }
 
-      //!NTopinions #channelName #movieName
+      //!opinions #channelName #movieName
       //Returns people's ratings of the given movie
-      if(messageDisplay.startsWith("!NTopinions")){
+      if(messageDisplay.startsWith("!opinions")){
          thisChannel.sendMessage(MovieOpinions.opinions(messageDisplay, channelList)).queue();
       }
 
-      //!NTrandomMovie #channelName
+      //!randomMovie #channelName
       //Returns a random red dot movie from #channelName
-      if(messageDisplay.startsWith("!NTrandomMovie")){
+      if(messageDisplay.startsWith("!randomMovie")){
          thisChannel.sendMessage(MovieRandom.getMovie(messageDisplay, channelList)).queue();
       }
 
-      //!NTd #num
+      //!d #num
       //Returns a random number between 0 and #num
-      if (messageDisplay.startsWith("!NTd")) {
+      if (messageDisplay.startsWith("!d")) {
          thisChannel.sendMessage(DiceRoller.roll(messageDisplay)).queue();
       }
    }
