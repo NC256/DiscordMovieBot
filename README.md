@@ -1,7 +1,7 @@
 # DiscordMovieBot
 A quick and dirty Discord bot that I wrote to tally movie ratings for my friends on Discord.
 
-##Explanation
+## Explanation
 This bot takes in all the messages in a given channel and ranks them by average rating which is determined by counting the emoji reactions.
 Currently the emojis 0 through 10 are used, along with the pause button which is rated as an 11, and the clock with hands facing up which 
 is rated as 12. It's currently a 0 through 12 scale.
