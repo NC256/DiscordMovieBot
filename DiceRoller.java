@@ -4,7 +4,7 @@ public class DiceRoller {
 
    public static String roll(String messageDisplay) {
       try {
-         int maxNum = Integer.valueOf(messageDisplay.substring(5));
+         int maxNum = Integer.valueOf(messageDisplay.substring(3));
          if (maxNum <= 0) {
             return "Whoops, you didn't enter a positive number!";
          }

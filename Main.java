@@ -84,10 +84,9 @@ public class Main extends ListenerAdapter {
                  "rankings or the rankings of `optionalUsername`\n" +
                  "`!checkCompletion channelName optionalUsername` Returns a list of " +
                  "movies that you haven't rated or have accidentally rated twice. \n" +
-                 "`!opinions channelName movieName` Returns the ratings on the given" +
-                         " movie\n" +
-                 "`!randomMovie channelName` Gives you a random red dot movie from " +
-                         "`channelName`").queue();
+                 "`!opinions channelName movieName` Returns the ratings on the given movie\n" +
+                 "`!randomMovie channelName` Gives you a random red dot movie from `channelName`\n" +
+                 "`!secretSanta [comma separated names (no spaces)]` Secret Santa Command :santa:").queue();
       }
 
       //If the message we received starts with this text, do this stuff
@@ -132,6 +131,10 @@ public class Main extends ListenerAdapter {
       //Returns a random number between 0 and #num
       if (messageDisplay.startsWith("!d")) {
          thisChannel.sendMessage(DiceRoller.roll(messageDisplay)).queue();
+      }
+      if (messageDisplay.startsWith("!secretSanta")){
+         SecretSanta.sendSecrets(messageDisplay, thisGuild);
+         thisChannel.sendMessage("The secrets have been delivered! :christmas_tree:").queue();
       }
    }
 }
