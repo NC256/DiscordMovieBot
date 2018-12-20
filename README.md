@@ -14,6 +14,7 @@ Currently the following commands are implemented:
 - `!checkCompletion channel_name [username]` Returns a list of movies that the user has not rated or has rated twice accidentally. Defaults to the user who sent the command if no username is provided.
 - `!opinions channel_name movie_name` Returns an ordered list of all ratings for the given movie_name.
 - `!randomMovie channel_name` Returns a random movie from the given channel that has been reacted to with a red dot (used to indicate not having watched that movie yet).
+- `!secretSanta [comma separated name list]` Shuffles all the names in the list so that a secret santa gift exchange can be done
 
 ## Built With
 
