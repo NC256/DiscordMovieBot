@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class SecretSanta {
+    //!secretSanta [comma separated name list]
 
 
-    public static void sendSecrets(String messageDisplay, Guild thisGuild){
+    public static void sendSecrets(String messageDisplay, Guild thisGuild) {
 
         //Strip front of command away
         messageDisplay = messageDisplay.substring(13);
@@ -27,18 +28,18 @@ public class SecretSanta {
         int escape = 0;
 
         //While they aren't shuffled correctly, keep shuffling and checking
-        while (noDuplicates){
+        while (noDuplicates) {
 
             noDuplicates = false;
 
             Collections.shuffle(randomMatches);
             for (int i = 0; i < names.length; i++) {
-                if(randomMatches.get(i).equals(names[i])){
+                if (randomMatches.get(i).equals(names[i])) {
                     noDuplicates = true;
                 }
             }
             escape++;
-            if(escape == 500){
+            if (escape == 500) {
                 System.out.println("Broken");
             }
         }
@@ -47,8 +48,7 @@ public class SecretSanta {
         for (int i = 0; i < names.length; i++) {
             final int ii = i;
             User user = MyUtils.getUserByName(names[i], thisGuild);
-            user.openPrivateChannel().queue((channel) ->
-            {
+            user.openPrivateChannel().queue((channel) -> {
                 channel.sendMessage(randomMatches.get(ii)).queue();
             });
         }

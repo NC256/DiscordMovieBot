@@ -14,8 +14,6 @@ public class Main extends ListenerAdapter {
 
     public static void main(String[] args) throws LoginException {
 
-        //Creates new JDABuilder, which is used for the back-end heavy lifting of letting
-        // Discord know your bot exists, logging in, etc
         JDABuilder builder = new JDABuilder(AccountType.BOT);
 
         //The TokenGiver class does not exist on my Github because it contains a single
@@ -38,7 +36,7 @@ public class Main extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
         System.out.println(event.getAuthor() + event.getMessage().getContentDisplay());
 
-        //If a bot sent a message, I'm not going to reply (because infinite loops are scary)
+        //Does not reply to bot messages
         if (event.getAuthor().isBot()) {
             return;
         }
@@ -70,6 +68,7 @@ public class Main extends ListenerAdapter {
         //Gets list of all TextChannels in guild (server) and puts them in a List
         List<TextChannel> channelList = thisGuild.getTextChannels();
 
+        //Gets the user that sent the message
         User thisUser = event.getAuthor();
 
         //If you've sent a help message I'm gonna print this string
@@ -78,17 +77,30 @@ public class Main extends ListenerAdapter {
             //You may notice that every single .sendMessage() ends with a .queue();
             // This is because Discord has some measures to avoid spam, and JDA handles
             // this automatically if you tack on .queue() at the end of every .sendMessage();
-            thisChannel.sendMessage("I am currently under construction!\n" + "Try the following commands:\n\n" + "`!d num` returns a random number between 0 and num\n" + "`!rankings channelName` returns a ranking of all the movies" + " in `channelName`\n" + "`!myRankings channelName optionalUsername` Delivers your personal " + "rankings or the rankings of `optionalUsername`\n" + "`!checkCompletion channelName optionalUsername` Returns a list of " + "movies that you haven't rated or have accidentally rated twice. \n" + "`!opinions channelName movieName` Returns the ratings on the given movie\n" + "`!randomMovie channelName` Gives you a random red dot movie from `channelName`\n" + "`!secretSanta [comma separated names (no spaces)]` Secret Santa Command :santa:").queue();
+            thisChannel.sendMessage("Try the following commands:\n\n" + "`!d num` " + "returns a random number between 0 and num\n"
+
+                    + "`!rankings channelName` " + "returns a ranking of all the movies in `channelName`\n"
+
+                    + "`!myRankings channelName optionalUsername` " + "Delivers your personal rankings or the rankings of `optionalUsername`\n"
+
+                    + "`!checkCompletion channelName optionalUsername` " + "Returns a list of movies that you haven't rated or have accidentally rated twice. \n"
+
+                    + "`!opinions channelName movieName`" + " Returns the ratings on the given movie\n"
+
+                    + "`!randomMovie channelName`" + " Gives you a random red dot movie from `channelName`\n"
+
+                    + "`!secretSanta [comma separated names (no spaces)]` " + "Secret Santa Command :santa:").queue();
         }
 
-        //If the message we received starts with this text, do this stuff
-        //To avoid this Main being 5000 lines long with all the code for every command,
-        // most of them will be placed in other Classes
+        //!d #num
+        //Returns a random number between 0 and #num
+        if (messageDisplay.startsWith("!d")) {
+            thisChannel.sendMessage(DiceRoller.roll(messageDisplay)).queue();
+        }
 
         //!rankings #channelName
         //Returns a ranking of all the movies in #channelName
         if (messageDisplay.startsWith("!" + "rankings")) {
-
             thisChannel.sendMessage(MovieRankings.rankings(messageDisplay, channelList)).queue();
         }
 
@@ -114,12 +126,6 @@ public class Main extends ListenerAdapter {
         //Returns a random red dot movie from #channelName
         if (messageDisplay.startsWith("!randomMovie")) {
             thisChannel.sendMessage(MovieRandom.getMovie(messageDisplay, channelList)).queue();
-        }
-
-        //!d #num
-        //Returns a random number between 0 and #num
-        if (messageDisplay.startsWith("!d")) {
-            thisChannel.sendMessage(DiceRoller.roll(messageDisplay)).queue();
         }
 
         //!secretSanta [comma separated name list]
