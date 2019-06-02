@@ -1,13 +1,27 @@
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.List;
 
-public class MovieRankings {
+public class MovieRankings implements Command {
     //!rankings #channelName
 
-    static String rankings(String messageDisplay, List<TextChannel> channelList) {
+    MessageReceivedEvent message;
+    String[] args;
+
+    MovieRankings(MessageReceivedEvent message, String[] args) {
+        this.message = message;
+        this.args = args;
+    }
+
+    //This class is overly commented in order to help anyone who has no idea what they are looking at
+    @Override
+    public String execute() {
         try {
+
+            Guild thisGuild = message.getGuild();
 
             //This StringBuilder will hold the text that contains the list of movies
             // and rankings. You can do this with a String, but String concatenation is
@@ -15,29 +29,29 @@ public class MovieRankings {
             // together and are much faster
             StringBuilder returnString = new StringBuilder();
 
-            //Open code block
+            //Open code block for Discord formatting
             returnString.append("```");
 
-            //This gets the name of the channel that you type onto the end of the command
-            String[] input = messageDisplay.split(" ");
-            if (input.length == 1) {
-                return "Could not find that channel.";
-            }
+            //Gets the channel the user specifies from MyUtils class
+            TextChannel movieChannel = MyUtils.getTextChannelByName(args[0], thisGuild);
 
-            //Calls MyUtils class to search for the movie in the list of channels provided
-            TextChannel movieChannel = MyUtils.getTextChannelByName(input[1], channelList);
-
-            //If that method was unable to find the channel then it returns null, and we
-            // check that here
+            //If that method was unable to find the channel then it returns null, and we notify the user here
             if (movieChannel == null) {
                 return "Could not find that channel.";
             }
 
+            //We get a list of every message that is a valid movie
             List<Message> validMovies = MyUtils.getValidMoviesFromTextChannel(movieChannel);
 
-            int counter = 1;
-            String temp = ": ";
+            //If none of the messages in the channel are valid, then alert the user
+            if (validMovies.size() == 0) {
+                return "No valid movies found";
+            }
 
+            int counter = 1;
+
+            //This grows at a rate of n(n+1)/2 (or O(n^2)), which is not great.
+            //Pre-sorting this would likely make it run faster, but it runs fast enough for the time being
             //While my array of Movie objects isn't empty
             while (!validMovies.isEmpty()) {
                 double highest = -1;
@@ -47,6 +61,8 @@ public class MovieRankings {
                 // average rating, which it then keeps track of that movie's score and
                 // it's location in the ArrayList
                 for (int i = 0; i < validMovies.size(); i++) {
+
+                    //Gets the score of the movie
                     double currentAverage = MyUtils.getAverageMovieRating(validMovies.get(i));
 
                     //If the movie we're looking at has a higher rating then we track that one
@@ -55,6 +71,7 @@ public class MovieRankings {
                         highestIndex = i;
                     }
                 }
+
                 //We get the name and rating and format it to look nice
                 String movieName = validMovies.get(highestIndex).getContentDisplay();
                 double movieRating = MyUtils.getAverageMovieRating(validMovies.get(highestIndex));
@@ -65,12 +82,6 @@ public class MovieRankings {
                 // can loop over it again looking for the next highest ranked movie
                 validMovies.remove(highestIndex);
                 counter++;
-            }
-
-            //If our StringBuilder is empty after all the prior code has run, then we haven't
-            // found a single valid movie
-            if (returnString.toString().isEmpty()) {
-                return "No movies found.";
             }
 
             //Close code block
@@ -85,7 +96,7 @@ public class MovieRankings {
         // case our subString method call at the top that looks for the channel name
         // tries to look outside of the string we received, and throws this exception
         catch (IndexOutOfBoundsException e1) {
-            return "No channel name provided or you need a space " + "before the channel name";
+            return "No channel name provided or you need a space before the channel name";
         }
     }
 }

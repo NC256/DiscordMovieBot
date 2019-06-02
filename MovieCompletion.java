@@ -3,44 +3,56 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.List;
 
-public class MovieCompletion {
-    //!checkCompletion #channelName #optionalUsername
+public class MovieCompletion implements Command {
+    //!movieCompletion #channelName #optionalUsername
+
+    MessageReceivedEvent message;
+    String[] args;
+
+    MovieCompletion(MessageReceivedEvent message, String[] args) {
+        this.message = message;
+        this.args = args;
+    }
 
 
     //This class checks for the following:
     //Rating twice
-    //Not rating
+    //Not rated
 
-    static String completion(String messageDisplay, List<TextChannel> channelList, User thisUser, Guild thisGuild) {
-
+    @Override
+    public String execute() {
+        TextChannel thisChannel = message.getTextChannel();
+        double startTime = System.currentTimeMillis();
+        Guild thisGuild = message.getGuild();
+        User thisUser = message.getAuthor();
         StringBuilder returnString = new StringBuilder();
-        String[] input = messageDisplay.split(" ");
         String username = null;
         String channelName;
-        if (input.length > 1) {
-            channelName = input[1];
-        } else {
-            return "No channel name provided or you need a space " + "before the channel name";
-        }
-        if (input.length > 2) {
-            for (int i = 2; i < input.length; i++) {
-                if (i == 2) {
-                    username = input[2];
-                } else if (i > 2) {
-                    username += " " + input[i];
-                }
-            }
+
+        channelName = args[0];
+
+
+        if (args.length == 2) {
+            username = args[1];
+        } else if (args.length > 2) {
+            username = MyUtils.rebuildUsername(args, 1);
         }
 
-        TextChannel movieChannel = MyUtils.getTextChannelByName(channelName, channelList);
+        TextChannel movieChannel = MyUtils.getTextChannelByName(channelName, thisGuild);
+
         if (movieChannel == null) {
             return "Cannot find that channel";
         }
         List<Message> movies = MyUtils.getValidMoviesFromTextChannel(movieChannel);
+
+        //Array to count how many ratings per movie the user has made
         int[] numOfRatings = new int[movies.size()];
+
+        //If no username provided, assume user who sent message
         if (username == null) {
             returnString.append(thisUser.getName());
             returnString.append("'s Movie Completion:\n");
@@ -53,40 +65,31 @@ public class MovieCompletion {
                 returnString.append("'s Movie Completion:\n");
             }
         }
+
+        //Loop is very slow, so heads up message is sent
+        thisChannel.sendMessage("Working...this could take a few seconds...").queue();
+
         //For each movie
-        int currentReactionValue;
-        String currentReactionName;
-        long startLoop = System.currentTimeMillis();
         for (int i = 0; i < movies.size(); i++) {
 
             //Get a list of all reactions
             List<MessageReaction> reactions = movies.get(i).getReactions();
 
-            //For each reaction
-            middleLoop:
+            //For each reaction to the movie
             for (int k = 0; k < reactions.size(); k++) {
 
                 //Get its name
-                currentReactionName = reactions.get(k).getReactionEmote().getName();
+                String currentReactionName = reactions.get(k).getReactionEmote().getName();
 
-                //If it's a valid reaction, get its value
-                if (MyUtils.isValidReaction(currentReactionName)) {
-                    currentReactionValue = MyUtils.getValidReactionValue(currentReactionName);
-                }
-
-                //If it isn't, move to the next reaction
-                else {
+                //If it isn't a valid reaction, move to the next one
+                if (!MyUtils.isValidReaction(currentReactionName)) {
                     continue;
                 }
 
-                //Use this garbage to get the users for the current reaction
-                Object[] userArray = reactions.get(k).getUsers().stream().toArray();
-
-                //For the list of users on this reaction
-                for (int j = 0; j < userArray.length; j++) {
-                    if (userArray[j].equals(thisUser)) {
-                        numOfRatings[i]++;
-                    }
+                //If we find the user in any given reaction, we count that as a rating
+                final User workAround = thisUser;
+                if (reactions.get(k).getUsers().stream().anyMatch(s -> s.equals(workAround))) {
+                    numOfRatings[i]++;
                 }
             }
         }
@@ -98,14 +101,16 @@ public class MovieCompletion {
                 returnString.append("You have not rated ");
                 returnString.append(movies.get(i).getContentDisplay());
                 returnString.append("\n");
-            } else if (numOfRatings[i] == 1) {
-                //Do nothing
             } else if (numOfRatings[i] >= 2) {
                 returnString.append("You have rated ");
                 returnString.append(movies.get(i).getContentDisplay());
                 returnString.append(" more than once!\n");
             }
         }
+        double endTime = System.currentTimeMillis();
+        returnString.append("That took ");
+        returnString.append(endTime - startTime);
+        returnString.append(" milliseconds\n");
         return returnString.toString();
     }
 

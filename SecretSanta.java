@@ -1,21 +1,28 @@
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class SecretSanta {
+public class SecretSanta implements Command {
     //!secretSanta [comma separated name list]
 
+    MessageReceivedEvent message;
+    String[] args;
 
-    public static void sendSecrets(String messageDisplay, Guild thisGuild) {
+    SecretSanta(MessageReceivedEvent message, String[] args) {
+        this.message = message;
+        this.args = args;
+    }
 
-        //Strip front of command away
-        messageDisplay = messageDisplay.substring(13);
-        System.out.println(messageDisplay);
+    @Override
+    public String execute() {
+
+        Guild thisGuild = message.getGuild();
 
         //Names into array
-        String[] names = messageDisplay.split(",");
+        String[] names = args[0].split(",");
 
         ArrayList<String> randomMatches = new ArrayList<String>();
 
@@ -52,5 +59,6 @@ public class SecretSanta {
                 channel.sendMessage(randomMatches.get(ii)).queue();
             });
         }
+        return "Check your messages!";
     }
 }

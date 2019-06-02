@@ -1,10 +1,21 @@
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+
 import java.util.Random;
 
-public class DiceRoller {
+public class DiceRoller implements Command {
 
-    public static String roll(String messageDisplay) {
+    MessageReceivedEvent message;
+    String[] args;
+
+    DiceRoller(MessageReceivedEvent message, String[] args) {
+        this.message = message;
+        this.args = args;
+    }
+
+    @Override
+    public String execute() {
         try {
-            int maxNum = Integer.valueOf(messageDisplay.substring(3));
+            int maxNum = Integer.valueOf(args[0]);
             if (maxNum <= 0) {
                 return "Whoops, you didn't enter a positive number!";
             }
@@ -19,9 +30,12 @@ public class DiceRoller {
                 return String.valueOf(returnValue);
             }
 
-        } catch (NumberFormatException e1) {
-            return "Please enter an integer between 0 and 2,147," + "483,648!";
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return "Please enter an integer between 0 and 2,147,483,648!";
+        } catch (NullPointerException e1) {
+            e1.printStackTrace();
+            return "Please enter a number after the command!";
         }
     }
-
 }

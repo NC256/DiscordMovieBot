@@ -1,64 +1,60 @@
+import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyUtils {
 
-    //Gets a list of TextChannels and the name of a desired TextChannel and searches
-    // through them by name and returns the TextChannel with the matching name
-    //Returns null if it can't find the channel in the provided list
-    public static TextChannel getTextChannelByName(String channelName, List<TextChannel> channelList) {
+    //Returns the textchannel that is being looked for
+    public static TextChannel getTextChannelByName(String channelName, Guild thisGuild) {
 
-        for (int i = 0; i < channelList.size(); i++) {
-            if (channelList.get(i).getName().equals(channelName)) {
-                return channelList.get(i);
-            }
+        List<TextChannel> channelList = thisGuild.getTextChannelsByName(channelName, true);
+        if (channelList.size() == 1) {
+            return channelList.get(0);
+        } else {
+            return null;
         }
-        return null;
     }
 
-    //This can probably be done better, but having the structure in place is the most
-    // important thing for right now
-    public static List<Message> getValidMoviesFromTextChannel(TextChannel movieChannel) {
-        ArrayList<Message> movieCandidates = new ArrayList<>();
-        for (Message message : movieChannel.getIterableHistory()) {
+    //Gets all messages from channel that have at least one reaction
+    //Is pretty fast
+    private static List<Message> getMessagesWithReactions(TextChannel channel) {
+        ArrayList<Message> reacted = new ArrayList<>();
+        for (Message message : channel.getIterableHistory()) {
             List<MessageReaction> reactions = message.getReactions();
             if (reactions.isEmpty()) {
                 continue;
             }
-            movieCandidates.add(message);
+            reacted.add(message);
         }
+        return reacted;
+    }
 
-        //This nifty little line is called a Predicate, added in Java 8
-        //It will look at my entire movieCandidates ArrayList and remove anything that
-        // returns a -1 for it's average rating. This avoids loops and removing elements
-        // and literally does all of it in one line
-        movieCandidates.removeIf(m -> getAverageMovieRating(m) == -1);
+    //Returns all valid movies
+    public static List<Message> getValidMoviesFromTextChannel(TextChannel movieChannel) {
 
-        return movieCandidates;
+        List<Message> validMovies = getMessagesWithReactions(movieChannel);
+
+        //-1 is any movie with a red dot (not counted), so it's removed here
+        //-1 is also any movie without at least 1 valid rating
+        validMovies.removeIf(m -> getAverageMovieRating(m) == -1);
+
+        return validMovies;
     }
 
     //Returns a list of movies that have red dot reactions
     public static List<Message> getRedDotMoviesFromTextChannel(TextChannel movieChannel) {
-        ArrayList<Message> movieCandidates = new ArrayList<>();
-        for (Message message : movieChannel.getIterableHistory()) {
-            List<MessageReaction> reactions = message.getReactions();
-            if (reactions.isEmpty()) {
-                continue;
-            }
-            movieCandidates.add(message);
-        }
-        //Removes movie if it isn't a red dot movie
-        movieCandidates.removeIf(m -> !isRedDotMovie(m));
+        List<Message> redDots = getMessagesWithReactions(movieChannel);
 
-        return movieCandidates;
+        //Removes movie if it isn't a red dot movie
+        redDots.removeIf(m -> !isRedDotMovie(m));
+
+        return redDots;
     }
 
     //Returns true if the given Message movie has a red dot
@@ -68,17 +64,13 @@ public class MyUtils {
         List<MessageReaction> reactions = movie.getReactions();
 
         //For each reaction
-        for (int i = 0; i < reactions.size(); i++) {
-            MessageReaction reaction = reactions.get(i);
+        for (MessageReaction reaction : reactions) {
 
             //If we find a red dot, return true
             if (isRedCircle(reaction.getReactionEmote().getName())) {
                 return true;
-            } else {
-                continue;
             }
         }
-
         return false;
     }
 
@@ -92,17 +84,20 @@ public class MyUtils {
         //For each reaction
         for (int i = 0; i < reactions.size(); i++) {
             MessageReaction reaction = reactions.get(i);
+            String reactionName = reaction.getReactionEmote().getName();
 
             //If we find a red circle, return -1.0
-            if (isRedCircle(reaction.getReactionEmote().getName())) {
+            if (isRedCircle(reactionName)) {
                 return -1.0;
             }
 
             //If the reaction is valid, add the number of times it's submitted to the
             // total and add it's value to the ongoing total
-            if (isValidReaction(reaction.getReactionEmote().getName())) {
+            if (isValidReaction(reactionName)) {
                 numOfReactions += reaction.getCount();
-                totalValue += (getValidReactionValue(reaction.getReactionEmote().getName()) * reaction.getCount());
+
+                // totalValue += value of reaction * total number of reactions
+                totalValue += (getValidReactionValue(reactionName) * reaction.getCount());
             }
         }
         //If, after counting the reactions, we find no ratings, return -1.0
@@ -127,22 +122,23 @@ public class MyUtils {
     //Gets the reaction value for a given user and given movie
     public static int getUserRatingFromMovie(Message movie, User user) {
 
+        //This method is rather slow despite some attempts at optimization
+
+        //Get a list of all reactions(emotes) on the given message
         List<MessageReaction> reactions = movie.getReactions();
+
+        //For each reaction on the current message
         for (MessageReaction mr : reactions) {
-            String currentReactionName = mr.getReactionEmote().getName();
-            int currentReactionValue = -1;
 
-            //If not a valid reaction, skip to the next one
-            if (MyUtils.isValidReaction(currentReactionName)) {
-                currentReactionValue = MyUtils.getValidReactionValue(currentReactionName);
-            } else {
-                continue;
-            }
-            Object[] userArray = mr.getUsers().stream().toArray();
+            //get name
+            String name = mr.getReactionEmote().getName();
 
-            for (int k = 0; k < userArray.length; k++) {
-                if (userArray[k].equals(user)) {
-                    return currentReactionValue;
+            //If it's valid (aka, an actual rating)
+            if (MyUtils.isValidReaction(name)) {
+
+                //If any user in the stream of users who responded with that reaction matches the user we're looking for, then bingo
+                if (mr.getUsers().stream().anyMatch(s -> s.equals(user))) {
+                    return MyUtils.getValidReactionValue(name);
                 }
             }
         }
@@ -151,11 +147,17 @@ public class MyUtils {
 
     //Returns a user from a Guild based on name
     public static User getUserByName(String name, Guild guild) {
+
+        //Gets users by original names
         List<Member> returnedUsers = guild.getMembersByName(name, true);
         if (returnedUsers.size() > 1) {
             return null;
-        } else if (returnedUsers.size() == 0) {
+        }
+        //If none are found, try again with nicknames
+        else if (returnedUsers.size() == 0) {
             List<Member> returnedNicknameUsers = guild.getMembersByNickname(name, true);
+
+            //More than one match is found (probably because the user didn't type the full name
             if (returnedNicknameUsers.size() > 1) {
                 return null;
             } else if (returnedNicknameUsers.size() == 0) {
@@ -172,11 +174,7 @@ public class MyUtils {
     //This maybe shouldn't exist?
     public static boolean isRedCircle(String name) {
 
-        if (name.equals("\uD83D\uDD34")) {
-            return true;
-        } else {
-            return false;
-        }
+        return name.equals("\uD83D\uDD34");
     }
 
     //This method returns an integer value for each of the valid reactions
@@ -211,5 +209,20 @@ public class MyUtils {
             default:
                 return -1;
         }
+    }
+
+    public static String rebuildUsername(String[] args, int startpos) {
+
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = startpos; i < args.length; i++) {
+            if (i == args.length - 1) {
+                builder.append(args[i]);
+            } else {
+                builder.append(args[i]);
+                builder.append(" ");
+            }
+        }
+        return builder.toString();
     }
 }

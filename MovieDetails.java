@@ -1,42 +1,47 @@
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MovieOpinions {
-    //!opinions #channelName #movieName
+public class MovieDetails implements Command {
+    //!movieDetails #channelName #movieName
+
+    MessageReceivedEvent message;
+    String[] args;
+
+    MovieDetails(MessageReceivedEvent message, String[] args) {
+        this.message = message;
+        this.args = args;
+    }
 
 
-    static String opinions(String messageDisplay, List<TextChannel> channelList) {
+    @Override
+    public String execute() {
+
+        Guild thisGuild = message.getGuild();
 
         //StringBuilder for crafting the return message
         //String[] input for splitting each word in the command
         StringBuilder returnString = new StringBuilder();
-        String[] input = messageDisplay.split(" ");
         String channelName;
         String movieName = null;
         Message mainMovie = null;
 
         //If incorrectly entered, return error, otherwise mark down the channel name
-        if (input.length > 1) {
-            channelName = input[1];
-        } else {
-            return "No channel name provided or you need a space before the channel name";
-        }
+        channelName = args[0];
+
 
         //Movie names can have spaces in them, so the name needs to be reassembled
-        if (input.length > 2) {
-            for (int i = 2; i < input.length; i++) {
-                if (i == 2) {
-                    movieName = input[2];
-                } else {
-                    movieName += " " + input[i];
-                }
-            }
+        if (args.length == 2) {
+            movieName = args[1];
+        } else {
+            movieName = MyUtils.rebuildUsername(args, 1);
         }
 
         if (movieName == null) {
@@ -44,7 +49,7 @@ public class MovieOpinions {
         }
 
         //Getting reference to the channel with all the movies in it
-        TextChannel movieChannel = MyUtils.getTextChannelByName(channelName, channelList);
+        TextChannel movieChannel = MyUtils.getTextChannelByName(channelName, thisGuild);
         if (movieChannel == null) {
             return "Cannot find that channel";
         }
