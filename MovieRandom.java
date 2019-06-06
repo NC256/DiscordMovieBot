@@ -1,4 +1,3 @@
-import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -6,8 +5,10 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * This movie randomly returns the name of a movie that is marked as unwatched
+ */
 public class MovieRandom implements Command {
-    //!randomMovie #channelName
 
     MessageReceivedEvent message;
     String[] args;
@@ -17,41 +18,24 @@ public class MovieRandom implements Command {
         this.args = args;
     }
 
-
     public String execute() {
+        StringBuilder stringBuilder = new StringBuilder();
 
-        Guild thisGuild = message.getGuild();
-
-        //Declare variables
-        StringBuilder returnString = new StringBuilder();
-        String channelName;
-
-
-        //Make sure user gave us a channel argument
-        channelName = args[0];
-
-
-        //Go get the channel they specified
-        TextChannel movieChannel = MyUtils.getTextChannelByName(channelName, thisGuild);
+        TextChannel movieChannel = MyUtils.getTextChannelByName(args[0], message.getGuild());
         if (movieChannel == null) {
             return "Cannot find that channel";
         }
 
-        //Get a list of all red dot movies
-        List<Message> movies = MyUtils.getRedDotMoviesFromTextChannel(movieChannel);
-
+        List<Message> movies = MyUtils.getRedDotMovies(movieChannel);
         if (movies.size() == 0) {
             return "You've watched all the movies!";
         }
 
-        //Initiate a Random object
         Random myRand = new Random();
 
-        //I'm garbage for stacking all these calls but basically:
-        //Get a random movie from the List and get it's name and return that
-        returnString.append(movies.get(myRand.nextInt(movies.size())).getContentDisplay());
+        int random = myRand.nextInt(movies.size());
+        stringBuilder.append(movies.get(random).getContentDisplay());
 
-        return returnString.toString();
+        return stringBuilder.toString();
     }
-
 }

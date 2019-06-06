@@ -8,11 +8,18 @@ import net.dv8tion.jda.core.entities.User;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyUtils {
+public final class MyUtils {
 
-    //Returns the textchannel that is being looked for
-    public static TextChannel getTextChannelByName(String channelName, Guild thisGuild) {
+    //This class should not be instantiated
+    private MyUtils() {
+    }
 
+    /**
+     * @param channelName Name of the channel being searched for
+     * @param thisGuild   Guild that the channel exists in
+     * @return The TextChannel that matches the channelName being searched for, or null if not found
+     */
+    static TextChannel getTextChannelByName(String channelName, Guild thisGuild) {
         List<TextChannel> channelList = thisGuild.getTextChannelsByName(channelName, true);
         if (channelList.size() == 1) {
             return channelList.get(0);
@@ -21,8 +28,10 @@ public class MyUtils {
         }
     }
 
-    //Gets all messages from channel that have at least one reaction
-    //Is pretty fast
+    /**
+     * @param channel TextChannel to search though
+     * @return A List of messages that have one or more MessageReactions attached
+     */
     private static List<Message> getMessagesWithReactions(TextChannel channel) {
         ArrayList<Message> reacted = new ArrayList<>();
         for (Message message : channel.getIterableHistory()) {
@@ -35,9 +44,11 @@ public class MyUtils {
         return reacted;
     }
 
-    //Returns all valid movies
-    public static List<Message> getValidMoviesFromTextChannel(TextChannel movieChannel) {
-
+    /**
+     * @param movieChannel Channel that the movies (Messages) are in
+     * @return A List of all movies that have at least one valid rating and are not flagged as unwatched (red dot)
+     */
+    static List<Message> getValidMovies(TextChannel movieChannel) {
         List<Message> validMovies = getMessagesWithReactions(movieChannel);
 
         //-1 is any movie with a red dot (not counted), so it's removed here
@@ -47,57 +58,50 @@ public class MyUtils {
         return validMovies;
     }
 
-    //Returns a list of movies that have red dot reactions
-    public static List<Message> getRedDotMoviesFromTextChannel(TextChannel movieChannel) {
+    /**
+     * @param movieChannel Channel that the movies (Messages) are in
+     * @return A List of all movies in the movieChannel that have a red dot reaction
+     */
+    static List<Message> getRedDotMovies(TextChannel movieChannel) {
         List<Message> redDots = getMessagesWithReactions(movieChannel);
-
-        //Removes movie if it isn't a red dot movie
         redDots.removeIf(m -> !isRedDotMovie(m));
-
         return redDots;
     }
 
-    //Returns true if the given Message movie has a red dot
-    public static boolean isRedDotMovie(Message movie) {
-
-        //List of reactions
+    /**
+     * @param movie Message to evaluate for a red dot
+     * @return True if red dot is found, false otherwise
+     */
+    private static boolean isRedDotMovie(Message movie) {
         List<MessageReaction> reactions = movie.getReactions();
-
-        //For each reaction
         for (MessageReaction reaction : reactions) {
-
-            //If we find a red dot, return true
-            if (isRedCircle(reaction.getReactionEmote().getName())) {
+            if (isRedDot(reaction.getReactionEmote().getName())) {
                 return true;
             }
         }
         return false;
     }
 
-    //Returns the average score of the movie passed
-    public static double getAverageMovieRating(Message movie) {
-        //Make list of reactions
+    /**
+     * @param movie The movie (Message) to be scored
+     * @return The average rating score of the movie
+     */
+    static double getAverageMovieRating(Message movie) {
         List<MessageReaction> reactions = movie.getReactions();
         double numOfReactions = 0;
         double totalValue = 0;
 
-        //For each reaction
-        for (int i = 0; i < reactions.size(); i++) {
-            MessageReaction reaction = reactions.get(i);
-            String reactionName = reaction.getReactionEmote().getName();
+        for (MessageReaction mr : reactions) {
+            String reactionName = mr.getReactionEmote().getName();
 
-            //If we find a red circle, return -1.0
-            if (isRedCircle(reactionName)) {
+            if (isRedDot(reactionName)){
                 return -1.0;
             }
-
-            //If the reaction is valid, add the number of times it's submitted to the
-            // total and add it's value to the ongoing total
             if (isValidReaction(reactionName)) {
-                numOfReactions += reaction.getCount();
+                numOfReactions += mr.getCount();
 
-                // totalValue += value of reaction * total number of reactions
-                totalValue += (getValidReactionValue(reactionName) * reaction.getCount());
+                // totalValue += rating number * total number of ratings
+                totalValue += (getValidReactionValue(reactionName) * mr.getCount());
             }
         }
         //If, after counting the reactions, we find no ratings, return -1.0
@@ -108,77 +112,85 @@ public class MyUtils {
         }
     }
 
-    //Checks if reaction is valid movie rating
-    public static boolean isValidReaction(String name) {
-
-        //This method checks if the name of the reaction is one of the valid rating emojis
-        if (name.equals("1⃣") || name.equals("2⃣") || name.equals("3⃣") || name.equals("4⃣") || name.equals("5⃣") || name.equals("6⃣") || name.equals("7⃣") || name.equals("8⃣") || name.equals("9⃣") || name.equals("\uD83D\uDD1F") || name.equals("\u23F8") || name.equals("\uD83D\uDD5B") || name.equals("0⃣")) {
-            return true;
-        } else {
-            return false;
-        }
+    /**
+     * @param name Name of the MessageReaction
+     * @return True if it's a valid reaction, false otherwise
+     */
+    static boolean isValidReaction(String name) {
+        return (name.equals("1⃣") || name.equals("2⃣") ||
+                name.equals("3⃣") || name.equals("4⃣") ||
+                name.equals("5⃣") || name.equals("6⃣") ||
+                name.equals("7⃣") || name.equals("8⃣") ||
+                name.equals("9⃣") || name.equals("\uD83D\uDD1F") ||
+                name.equals("\u23F8") || name.equals("\uD83D\uDD5B") ||
+                name.equals("0⃣"));
     }
 
-    //Gets the reaction value for a given user and given movie
-    public static int getUserRatingFromMovie(Message movie, User user) {
+    /**
+     * Figures out what rating a user has given a movie and returns the value of that rating
+     *
+     * @param movie Movie to be checked
+     * @param user  User to look for
+     * @return The rating that the given user put on the movie, -1 if no rating given by that user
+     */
+    static int getUserRatingFromMovie(Message movie, User user) {
 
-        //This method is rather slow despite some attempts at optimization
-
-        //Get a list of all reactions(emotes) on the given message
         List<MessageReaction> reactions = movie.getReactions();
 
-        //For each reaction on the current message
         for (MessageReaction mr : reactions) {
-
-            //get name
-            String name = mr.getReactionEmote().getName();
+            String reactionName = mr.getReactionEmote().getName();
 
             //If it's valid (aka, an actual rating)
-            if (MyUtils.isValidReaction(name)) {
+            if (isValidReaction(reactionName)) {
 
-                //If any user in the stream of users who responded with that reaction matches the user we're looking for, then bingo
+                //Search for the user
                 if (mr.getUsers().stream().anyMatch(s -> s.equals(user))) {
-                    return MyUtils.getValidReactionValue(name);
+                    return getValidReactionValue(reactionName);
                 }
             }
         }
         return -1;
     }
 
-    //Returns a user from a Guild based on name
-    public static User getUserByName(String name, Guild guild) {
-
-        //Gets users by original names
+    /**
+     * @param name  name of User being searched for
+     * @param guild guild the User is in
+     * @return reference to the User being searched for, null if User not found
+     */
+    static User getUserByName(String name, Guild guild) {
         List<Member> returnedUsers = guild.getMembersByName(name, true);
-        if (returnedUsers.size() > 1) {
+
+        if (returnedUsers.size() == 1) {
+            return returnedUsers.get(0).getUser();
+        } else if (returnedUsers.size() > 1) {
             return null;
         }
         //If none are found, try again with nicknames
-        else if (returnedUsers.size() == 0) {
+        else  {
             List<Member> returnedNicknameUsers = guild.getMembersByNickname(name, true);
 
             //More than one match is found (probably because the user didn't type the full name
-            if (returnedNicknameUsers.size() > 1) {
-                return null;
-            } else if (returnedNicknameUsers.size() == 0) {
-                return null;
-            } else {
+            if (returnedNicknameUsers.size() == 1){
                 return returnedNicknameUsers.get(0).getUser();
+            } else {
+                return null;
             }
-        } else {
-            return returnedUsers.get(0).getUser();
         }
     }
 
-    //Red dot movies are ones that we haven't watched yet, and should not be given a rating
-    //This maybe shouldn't exist?
-    public static boolean isRedCircle(String name) {
-
+    /**
+     * @param name Name of the reaction to check
+     * @return true if it's the name of the red dot emote, false otherwise
+     */
+    private static boolean isRedDot(String name) {
         return name.equals("\uD83D\uDD34");
     }
 
-    //This method returns an integer value for each of the valid reactions
-    public static int getValidReactionValue(String name) {
+    /**
+     * @param name name of the reaction to be checked
+     * @return numerical value of the rating, -1 if not valid
+     */
+    static int getValidReactionValue(String name) {
         switch (name) {
             case "1⃣":
                 return 1;
@@ -211,18 +223,46 @@ public class MyUtils {
         }
     }
 
-    public static String rebuildUsername(String[] args, int startpos) {
-
-        StringBuilder builder = new StringBuilder();
-
+    /**
+     * @param args     String array to be partially or wholly recombined
+     * @param startpos where in the array to start the new string
+     * @return A single string of several array indexes added together
+     */
+    static String rebuildUsername(String[] args, int startpos) {
+        StringBuilder stringBuilder = new StringBuilder();
         for (int i = startpos; i < args.length; i++) {
+
+            //Don't append a space if it's the last word
             if (i == args.length - 1) {
-                builder.append(args[i]);
+                stringBuilder.append(args[i]);
             } else {
-                builder.append(args[i]);
-                builder.append(" ");
+                stringBuilder.append(args[i]).append(" ");
             }
         }
-        return builder.toString();
+        return stringBuilder.toString();
+    }
+
+    /**
+     * A method that processes user input for a command
+     *
+     * @param args  the string array of arguments passed to the command
+     * @param user  the user that sent the command
+     * @param guild the guild the user and command are in
+     * @return Reference to the user being targeted by the command. Defaults to the user who sent the command if another not found
+     */
+    static User getUserByInput(String[] args, User user, Guild guild) {
+
+        //If there are only two arguments, the second one is supposed to be the username
+        if (args.length == 2) {
+            return getUserByName(args[1], guild);
+        }
+        //More than that means we have to reconstruct the name
+        else if (args.length > 2) {
+            return getUserByName(rebuildUsername(args, 1), guild);
+        }
+        //No name provided, assume the user is the argument
+        else {
+            return user;
+        }
     }
 }

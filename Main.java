@@ -19,28 +19,27 @@ public class Main extends ListenerAdapter {
         String token = TokenGiver.returnToken();
         builder.setToken(token);
 
-        //This adds an eventListener so that whenever a message comes in this class will
-        // be sent the event
+        //This adds an eventListener so that whenever a message comes in,
+        // the onMessageReceived method will be sent the event
         builder.addEventListener(new Main());
 
         //This logs the bot in
         builder.buildAsync();
     }
 
-    //Overriding a method in the ListenerAdapter class so I can receive new messages
+    //Overriding a method in the ListenerAdapter class so we can receive new messages
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         System.out.println(event.getAuthor() + event.getMessage().getContentDisplay());
 
+        //Ignore all messages that aren't commands
         if (!event.getMessage().getContentDisplay().startsWith("!")) {
             return;
         }
-
         //Does not reply to messages sent by bots (in order to avoid any potential infinite loops)
         if (event.getAuthor().isBot()) {
             return;
         }
-
         //If the message I just received is a TextChannel object, then check if I can talk in
         // the TextChannel, and if I can't, do nothing.
         //I check what channel type I'm in first because if I call .getTextChannel() on a
@@ -51,10 +50,6 @@ public class Main extends ListenerAdapter {
                 return;
             }
         }
-
-        //This puts the message I received into a string so I can refer to it later
-        String messageDisplay = event.getMessage().getContentDisplay();
-
         //This gets the current MessageChannel so I can refer to it later
         //It's important to remember that a MessageChannel and a TextChannel are two
         //separate things. MessageChannel is the generic "Channel you can send messages to"
@@ -63,13 +58,12 @@ public class Main extends ListenerAdapter {
         MessageChannel thisChannel = event.getChannel();
 
         //If you've sent a help message I'm gonna print this string
-        if (messageDisplay.equals("!help")) {
+        if (event.getMessage().getContentDisplay().equals("!help")) {
 
             //You may notice that every single .sendMessage() ends with a .queue();
             // This is because Discord has some measures to avoid spam, and JDA handles
             // this automatically if you tack on .queue() at the end of every .sendMessage();
             thisChannel.sendMessage("Try the following commands:\n\n"
-                    + "`!d num` " + "returns a random number between 0 and num\n"
 
                     + "`!rankings channelName` " + "returns a ranking of all the movies in `channelName`\n"
 
@@ -81,12 +75,14 @@ public class Main extends ListenerAdapter {
 
                     + "`!randomMovie channelName`" + " Gives you a random red dot movie from `channelName`\n"
 
-                    + "`!secretSanta [comma separated names (no spaces)]` " + "Secret Santa Command :santa:").queue();
+                    + "`!secretSanta [comma separated names (no spaces)]` " + "Secret Santa Command :santa:"
 
+                    + "`!d num` " + "returns a random number between 0 and num\n"
+
+            ).queue();
             return;
         }
-
-        //Fire the command handler
-        new CommandInvoker(event);
+        //Command handler processes command
+        CommandInvoker.processCommand(event);
     }
 }

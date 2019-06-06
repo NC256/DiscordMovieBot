@@ -2,6 +2,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.Random;
 
+/**
+ * Returns a pseudo-random number between 0 (exclusive) and the number given (inclusive)
+ */
 public class DiceRoller implements Command {
 
     MessageReceivedEvent message;
@@ -19,6 +22,7 @@ public class DiceRoller implements Command {
             if (maxNum <= 0) {
                 return "Whoops, you didn't enter a positive number!";
             }
+
             Random myRand = new Random();
             int returnValue = myRand.nextInt(maxNum) + 1;
 
@@ -29,10 +33,10 @@ public class DiceRoller implements Command {
             } else {
                 return String.valueOf(returnValue);
             }
-
         } catch (NumberFormatException e) {
             e.printStackTrace();
             return "Please enter an integer between 0 and 2,147,483,648!";
+
         } catch (NullPointerException e1) {
             e1.printStackTrace();
             return "Please enter a number after the command!";
