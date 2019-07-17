@@ -24,7 +24,7 @@ public class Main extends ListenerAdapter {
         builder.addEventListener(new Main());
 
         //This logs the bot in
-        builder.buildAsync();
+        builder.build();
     }
 
     //Overriding a method in the ListenerAdapter class so we can receive new messages
@@ -75,7 +75,7 @@ public class Main extends ListenerAdapter {
 
                     + "`!randomMovie channelName`" + " Gives you a random red dot movie from `channelName`\n"
 
-                    + "`!secretSanta [comma separated names (no spaces)]` " + "Secret Santa Command :santa:"
+                    + "`!secretSanta [comma separated names (no spaces)]` " + "Secret Santa Command :santa:\n"
 
                     + "`!d num` " + "returns a random number between 0 and num\n"
 
