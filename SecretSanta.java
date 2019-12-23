@@ -22,9 +22,11 @@ public class SecretSanta implements Command {
     @Override
     public String execute() {
 
-        String[] names = args[0].split(",");
+        String[] names = args;
 
         ArrayList<String> shuffledNames = new ArrayList<>(Arrays.asList(names));
+        ArrayList<String> originalNames = new ArrayList<>(Arrays.asList(names));
+
 
         boolean duplicates = true;
         int escape = 0;
@@ -35,29 +37,33 @@ public class SecretSanta implements Command {
             duplicates = false;
 
             Collections.shuffle(shuffledNames);
+
             for (int i = 0; i < names.length; i++) {
-                if (shuffledNames.get(i).equals(names[i])) {
+                if (shuffledNames.get(i).equals(originalNames.get(i))) {
                     duplicates = true;
+                    break;
                 }
             }
 
             escape++;
-            if (escape == 100) {
+            if (escape == 1000) {
                 return "Error: Try again";
             }
         }
 
+        // OriginalNames[1] *gets* ShuffledNames[1] as the person they are gifting to
         //Private message the names to everyone
         for (int i = 0; i < names.length; i++) {
             final int ii = i;
-            User user = MyUtils.getUserByName(names[i], message.getGuild());
+            User user = MyUtils.getUserByName(originalNames.get(i), message.getGuild());
+            if (user == null) {
+                return "Can't find any user by name: " + originalNames.get(i);
+            }
             try {
-                user.openPrivateChannel().queue((channel) -> {
-                    channel.sendMessage(shuffledNames.get(ii)).queue();
-                });
+                user.openPrivateChannel().queue((channel) -> channel.sendMessage(shuffledNames.get(ii)).queue());
             } catch (NullPointerException e) {
                 e.printStackTrace();
-                return "Error: Could not private message everyone!";
+                return "Error: Could not private message: " + originalNames.get(i) + "!";
             }
 
         }

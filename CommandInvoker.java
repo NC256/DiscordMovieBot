@@ -18,7 +18,8 @@ class CommandInvoker {
 
         int endOfCommandWord = messageString.indexOf(" ");
 
-        //Every command has at least one argument, so this can be done
+
+        //Every command has at least one argument, so this can be done for now
         if (endOfCommandWord == -1) {
             channelReceived.sendMessage("No arguments found").queue();
             return;
@@ -26,6 +27,12 @@ class CommandInvoker {
 
         //The actual command word after the exclamation mark
         String commandWord = messageString.substring(0, endOfCommandWord);
+
+        if (commandEvent.getMessage().getContentDisplay().startsWith("!secretSanta")) {
+            String[] santaNames = messageString.substring(commandWord.length() + 1).split(",");
+            new SecretSanta(commandEvent, santaNames).execute();
+            return;
+        }
 
         //Get all the arguments after the command word (+1 consumes the empty space after the command word)
         String[] args = messageString.substring(commandWord.length() + 1).split(" ");
@@ -38,8 +45,6 @@ class CommandInvoker {
         commandMap.put("!movieCompletion", new MovieCompletion(commandEvent, args));
         commandMap.put("!movieDetails", new MovieDetails(commandEvent, args));
         commandMap.put("!randomMovie", new MovieRandom(commandEvent, args));
-        commandMap.put("!secretSanta", new SecretSanta(commandEvent, args));
-
         Command currentCommand = commandMap.get(commandWord);
 
         if (currentCommand == null) {
